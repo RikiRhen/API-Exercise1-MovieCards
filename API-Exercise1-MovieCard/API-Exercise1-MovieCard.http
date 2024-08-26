@@ -1,0 +1,6 @@
+@API_Exercise1_MovieCard_HostAddress = http://localhost:5056
+
+GET {{API_Exercise1_MovieCard_HostAddress}}/api/Movies/
+Accept: application/json
+
+###
