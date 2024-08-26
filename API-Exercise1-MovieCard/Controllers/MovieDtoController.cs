@@ -33,8 +33,29 @@ namespace API_Exercise1_MovieCard.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<MovieDto>> GetMovie(int id)
         {
-            throw new NotImplementedException();
+            var dto = await _context.Movie
+                .Where(m => m.Id == id)
+                .Select(m => new MovieByIdDto
+                {
+                    Id = m.Id,
+                    Title = m.Title,
+                    Rating = m.Rating,
+                    ReleaseDate = m.ReleaseDate,
+                    Description = m.Description,
+                    Genres = m.Genres.Select(g => g.GenreName).ToList(),
+                    Actors = m.Actors.Select(a => a.Name).ToList(),
+                    Director = m.Director.Name
+                })
+                .FirstOrDefaultAsync();
+
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(dto);
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMovie(int id)

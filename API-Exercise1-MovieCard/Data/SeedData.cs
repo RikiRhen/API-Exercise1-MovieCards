@@ -13,11 +13,11 @@ namespace API_Exercise1_MovieCard.Data
         internal static async Task InitializeAsync(MovieCardContext context)
         {
             //Check if data exists. If so, return.
-            if (await context.Movie.AnyAsync())
-            {
-                Console.WriteLine("Initialize SeedData cancelled, found existing data");
-                return;
-            }
+            //if (await context.Movie.AnyAsync())
+            //{
+            //    Console.WriteLine("Initialize SeedData cancelled, found existing data");
+            //    return;
+            //}
 
             var actors = GenerateActors(10);
             await context.AddRangeAsync(actors);
@@ -80,9 +80,7 @@ namespace API_Exercise1_MovieCard.Data
                 movie.Title = faker.Random.Word();
                 movie.Rating = faker.Random.Int(1, 10);
                 movie.ReleaseDate = faker.Date.PastDateOnly().ToString();
-                //Add a random ammount of lines for description, 1-3.
-                int numberOfLines = faker.Random.Int(1, 3);
-                movie.Description = faker.Lorem.Lines(numberOfLines);
+                movie.Description = faker.Lorem.Lines(2);
                 movie.Director = faker.PickRandom(directors);
                 int numberOfActors = faker.Random.Int(2, 6);
 
