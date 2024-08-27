@@ -11,8 +11,9 @@ using API_Exercise1_MovieCard.Models.Entities;
 
 namespace API_Exercise1_MovieCard.Controllers
 {
-    [Route("api/")]
+    [Route("api/Movies")]
     [ApiController]
+    [Produces("application/json")]
     public class MovieController : ControllerBase
     {
         private readonly MovieCardContext _context;
@@ -23,10 +24,10 @@ namespace API_Exercise1_MovieCard.Controllers
         }
 
         //GET: api/Movies
-        [HttpGet("Movies")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies()
         {
-            var dto = _context.Movie.Select(m => new MovieDto(m.Id, m.Title, m.Rating, m.ReleaseDate, m.Description, m.Genres.Select(g => g.GenreName).ToList(), m.Actors.Select(a => a.Name).ToList(), m.Director.Name));
+            var dto = _context.Movie.Select(m => new MovieDto(m.Id, m.Title, m.Rating, m.ReleaseDate, m.Description, m.Director.Name));
             return Ok(await dto.ToListAsync());
         }
 
@@ -36,17 +37,15 @@ namespace API_Exercise1_MovieCard.Controllers
         {
             var dto = await _context.Movie
                 .Where(m => m.Id == id)
-                .Select(m => new MovieByIdDto
-                {
-                    Id = m.Id,
-                    Title = m.Title,
-                    Rating = m.Rating,
-                    ReleaseDate = m.ReleaseDate,
-                    Description = m.Description,
-                    Genres = m.Genres.Select(g => g.GenreName).ToList(),
-                    Actors = m.Actors.Select(a => a.Name).ToList(),
-                    Director = m.Director.Name
-                })
+                .Select(m => new MovieDto
+                (
+                    m.Id,
+                    m.Title,
+                    m.Rating,
+                    m.ReleaseDate,
+                    m.Description,
+                    m.Director.Name
+                ))
                 .FirstOrDefaultAsync();
 
             if (dto == null)
@@ -62,7 +61,13 @@ namespace API_Exercise1_MovieCard.Controllers
         {
             if (newMovie == null)
             {
-                return BadRequest(); 
+                return BadRequest("newMovie was Null"); 
+            }
+
+            var director = await _context.Director.FindAsync(newMovie.DirectorId);
+            if (director == null)
+            {
+                return NotFound($"Director with ID {newMovie.DirectorId} was not found"); 
             }
 
             var finalMovieToAdd = new Movie()
@@ -71,15 +76,23 @@ namespace API_Exercise1_MovieCard.Controllers
                 Rating = newMovie.Rating,
                 ReleaseDate = newMovie.ReleaseDate,
                 Description = newMovie.Description,
-                Genres = newMovie.Genres,
-                Actors = newMovie.Actors,
-                Director = newMovie.Director
+                Director = director
             };
 
             _context.Movie.Add(finalMovieToAdd);
             await _context.SaveChangesAsync();
 
-            return CreatedAtRoute("GetMovie", finalMovieToAdd);
+            var movieDto = new MovieDto(
+                finalMovieToAdd.Id,
+                finalMovieToAdd.Title,
+                finalMovieToAdd.Rating,
+                finalMovieToAdd.ReleaseDate,
+                finalMovieToAdd.Description,
+                finalMovieToAdd.Director.Name
+                );
+
+
+            return CreatedAtAction(nameof(GetMovie), new { id = finalMovieToAdd.Id }, movieDto);
         }
 
         [HttpPut("{movieId}")]
@@ -91,14 +104,14 @@ namespace API_Exercise1_MovieCard.Controllers
                 return NotFound();
             }
 
-
             movie.Title = updateMovie.Title;
             movie.Rating = updateMovie.Rating;
             movie.ReleaseDate = updateMovie.ReleaseDate;
             movie.Description = updateMovie.Description;
-            movie.Genres = updateMovie.Genres;
-            movie.Actors = updateMovie.Actors;
-            movie.Director = updateMovie.Director;
+            //movie.Genres = updateMovie.Genres;
+            //movie.Actors = updateMovie.Actors;
+            //movie.Director = updateMovie.Director;
+            await _context.SaveChangesAsync();
 
             return NoContent();
 

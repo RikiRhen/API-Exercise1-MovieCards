@@ -13,11 +13,11 @@ namespace API_Exercise1_MovieCard.Data
         internal static async Task InitializeAsync(MovieCardContext context)
         {
             //Check if data exists. If so, return.
-            //if (await context.Movie.AnyAsync())
-            //{
-            //    Console.WriteLine("Initialize SeedData cancelled, found existing data");
-            //    return;
-            //}
+            if (await context.Movie.AnyAsync())
+            {
+                Console.WriteLine("Initialize SeedData cancelled, found existing data");
+                return;
+            }
 
             var actors = GenerateActors(10);
             await context.AddRangeAsync(actors);
@@ -52,7 +52,7 @@ namespace API_Exercise1_MovieCard.Data
                 director.DateOfBirth = faker.Date.PastDateOnly().ToString();
                 director.ContactInfo = new ContactInformation() 
                 { 
-                    Email = faker.Internet.Email(), 
+                    Email = director.Name.Replace(" ", "") + "@mail.me", 
                     PhoneNr = faker.Phone.PhoneNumber() 
                 };
             });
