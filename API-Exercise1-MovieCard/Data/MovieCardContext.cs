@@ -25,9 +25,6 @@ namespace API_Exercise1_MovieCard.Data
             optionsBuilder.EnableSensitiveDataLogging(true);
         }
 
-        //public DbSet<API_Exercise1_MovieCard.Models.Entities.Movie> Movie { get; set; } = default!;
-        //public DbSet<API_Exercise1_MovieCard.Models.DTOs.MovieDto> MovieDto { get; set; } = default!;
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Movie>()
