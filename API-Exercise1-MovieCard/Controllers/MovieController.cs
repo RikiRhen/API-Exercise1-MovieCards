@@ -61,13 +61,13 @@ namespace API_Exercise1_MovieCard.Controllers
         {
             if (newMovie == null)
             {
-                return BadRequest("newMovie was Null"); 
+                return BadRequest("newMovie was Null");
             }
 
             var director = await _context.Director.FindAsync(newMovie.DirectorId);
             if (director == null)
             {
-                return NotFound($"Director with ID {newMovie.DirectorId} was not found"); 
+                return NotFound($"Director with ID {newMovie.DirectorId} was not found");
             }
 
             var finalMovieToAdd = new Movie()
@@ -108,9 +108,6 @@ namespace API_Exercise1_MovieCard.Controllers
             movie.Rating = updateMovie.Rating;
             movie.ReleaseDate = updateMovie.ReleaseDate;
             movie.Description = updateMovie.Description;
-            //movie.Genres = updateMovie.Genres;
-            //movie.Actors = updateMovie.Actors;
-            //movie.Director = updateMovie.Director;
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -132,6 +129,35 @@ namespace API_Exercise1_MovieCard.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("{id}/details")]
+        public async Task<ActionResult<IEnumerable<MovieDetailDto>>> GetMovieDetails(int id)
+        {
+            var dto = await _context.Movie
+                .Where(m => m.Id == id)
+                .Select(m => new MovieDetailDto
+                (
+                    m.Id,
+                    m.Title,
+                    m.Rating,
+                    m.ReleaseDate,
+                    m.Description,
+                    m.Genres.Select(g => g.GenreName).ToList(),
+                    m.Actors.Select(a => a.Name).ToList(),
+                    m.Director,
+                    m.Director.ContactInfo.Email,
+                    m.Director.ContactInfo.PhoneNr
+                ))
+                .FirstOrDefaultAsync();
+
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(dto);
+        }
+
 
 
     }
