@@ -144,7 +144,7 @@ namespace API_Exercise1_MovieCard.Controllers
                     m.Description,
                     m.Genres.Select(g => g.GenreName).ToList(),
                     m.Actors.Select(a => a.Name).ToList(),
-                    m.Director,
+                    m.Director.Name,
                     m.Director.ContactInfo.Email,
                     m.Director.ContactInfo.PhoneNr
                 ))
