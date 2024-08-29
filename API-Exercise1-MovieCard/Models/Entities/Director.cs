@@ -1,4 +1,5 @@
-﻿namespace API_Exercise1_MovieCard.Models.Entities
+﻿
+namespace API_Exercise1_MovieCard.Models.Entities
 {
     public class Director
     {

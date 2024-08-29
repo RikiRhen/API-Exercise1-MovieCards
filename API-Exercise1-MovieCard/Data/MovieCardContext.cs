@@ -33,5 +33,12 @@ namespace API_Exercise1_MovieCard.Data
                 .HasForeignKey(m => m.DirectorId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            ChangeTracker.DetectChanges();
+
+            return base.SaveChangesAsync(cancellationToken);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Identity.Client;
+using System.Text.Json.Serialization;
 
 namespace API_Exercise1_MovieCard.Models.Entities
 {
@@ -11,6 +12,7 @@ namespace API_Exercise1_MovieCard.Models.Entities
         public int DirectorId { get; set; }
 
         //Navigation
+        [JsonIgnore]
         public Director Director { get; set; }
     }
 }

@@ -13,8 +13,8 @@ namespace API_Exercise1_MovieCard.Extensions
                 var serviceProvider = scope.ServiceProvider;
                 var context = serviceProvider.GetRequiredService<MovieCardContext>();
 
-                await context.Database.EnsureDeletedAsync();
-                await context.Database.MigrateAsync();
+                //await context.Database.EnsureDeletedAsync();
+                //await context.Database.MigrateAsync();
 
                 try
                 {

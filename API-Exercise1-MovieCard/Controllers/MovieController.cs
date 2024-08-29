@@ -11,7 +11,7 @@ using API_Exercise1_MovieCard.Models.Entities;
 
 namespace API_Exercise1_MovieCard.Controllers
 {
-    [Route("api/Movies")]
+    [Route("api")]
     [ApiController]
     [Produces("application/json")]
     public class MovieController : ControllerBase
@@ -22,17 +22,37 @@ namespace API_Exercise1_MovieCard.Controllers
         {
             _context = context;
         }
-
+        
+        // GET MOVIES
         //GET: api/Movies
-        [HttpGet]
+        [HttpGet("Movies")]
         public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies()
         {
             var dto = _context.Movie.Select(m => new MovieDto(m.Id, m.Title, m.Rating, m.ReleaseDate, m.Description, m.Director.Name));
             return Ok(await dto.ToListAsync());
         }
 
-        //GET: api/Movies/5
-        [HttpGet("{id}", Name = "GetMovie")]
+        // GET ACTORS
+        //GET: api/Actors
+        [HttpGet("Actors")]
+        public async Task<ActionResult<IEnumerable<ActorDto>>> GetActors()
+        {
+            var dto = _context.Actor.Select(a => new ActorDto(a.Name, a.DateOfBirth));
+            return Ok(await dto.ToListAsync());
+        }
+
+        //GET DIRECTORS
+        //GET: api/Directors
+        [HttpGet("Directors")]
+        public async Task<ActionResult<IEnumerable<DirectorDto>>> GetDirectors()
+        {
+            var dto = _context.Director.Include(d => d.ContactInfo).Select(d => new DirectorDto(d.Name, d.DateOfBirth, d.ContactInfo));
+            return Ok(await dto.ToListAsync());
+        }
+
+        //GET MOVIE BY ID
+        //GET: api/Movies/1
+        [HttpGet("Movies/{id}", Name = "GetMovie")]
         public async Task<ActionResult<MovieDto>> GetMovie(int id)
         {
             var dto = await _context.Movie
@@ -56,7 +76,53 @@ namespace API_Exercise1_MovieCard.Controllers
             return Ok(dto);
         }
 
-        [HttpPost]
+        //GET ACTOR BY ID
+        //GET: api/Actors/1
+        [HttpGet("Actors/{id}", Name = "GetActor")]
+        public async Task<ActionResult<ActorDto>> GetActor(int id)
+        {
+            var dto = await _context.Actor
+                .Where(a => a.Id == id)
+                .Select(a => new ActorDto
+                    (
+                        a.Name,
+                        a.DateOfBirth
+                    ))
+                .FirstOrDefaultAsync();
+
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(dto);
+        }
+
+        //GET DIRECTOR BY ID
+        //GET: api/Directors/1
+        [HttpGet("Directors/{id}", Name = "GetDirector")]
+        public async Task<ActionResult<DirectorDto>> GetDirector(int id)
+        {
+            var dto = await _context.Director
+                .Include(c => c.ContactInfo)
+                .Where(d => d.Id == id)
+                .Select(d => new DirectorDto
+                    (
+                        d.Name,
+                        d.DateOfBirth,
+                        d.ContactInfo
+                    ))
+                .FirstOrDefaultAsync();
+
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(dto);
+        }
+
+        [HttpPost("Movies")]
         public async Task<ActionResult<Movie>> CreateMovie(MovieForCreationDto newMovie)
         {
             if (newMovie == null)
@@ -95,7 +161,7 @@ namespace API_Exercise1_MovieCard.Controllers
             return CreatedAtAction(nameof(GetMovie), new { id = finalMovieToAdd.Id }, movieDto);
         }
 
-        [HttpPut("{movieId}")]
+        [HttpPut("Movies/{movieId}")]
         public async Task<ActionResult> UpdateMovie(int movieId, MovieForUpdateDto updateMovie)
         {
             var movie = await _context.Movie.FirstOrDefaultAsync(m => m.Id == movieId);
@@ -115,7 +181,7 @@ namespace API_Exercise1_MovieCard.Controllers
         }
 
 
-        [HttpDelete("{id}")]
+        [HttpDelete("Movies/{id}")]
         public async Task<IActionResult> DeleteMovie(int id)
         {
             var movie = await _context.Movie.FindAsync(id);
@@ -130,10 +196,11 @@ namespace API_Exercise1_MovieCard.Controllers
             return NoContent();
         }
 
-        [HttpGet("{id}/details")]
+        [HttpGet("Movies/{id}/details")]
         public async Task<ActionResult<IEnumerable<MovieDetailDto>>> GetMovieDetails(int id)
         {
             var dto = await _context.Movie
+                .Include(m => m.Director.ContactInfo)
                 .Where(m => m.Id == id)
                 .Select(m => new MovieDetailDto
                 (
@@ -144,9 +211,12 @@ namespace API_Exercise1_MovieCard.Controllers
                     m.Description,
                     m.Genres.Select(g => g.GenreName).ToList(),
                     m.Actors.Select(a => a.Name).ToList(),
-                    m.Director.Name,
-                    m.Director.ContactInfo.Email,
-                    m.Director.ContactInfo.PhoneNr
+                    new DirectorDto
+                    (
+                        m.Director.Name,
+                        m.Director.DateOfBirth,
+                        m.Director.ContactInfo
+                    )
                 ))
                 .FirstOrDefaultAsync();
 
