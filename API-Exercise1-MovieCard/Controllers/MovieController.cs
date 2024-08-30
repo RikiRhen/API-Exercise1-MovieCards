@@ -46,7 +46,7 @@ namespace API_Exercise1_MovieCard.Controllers
         [HttpGet("Directors")]
         public async Task<ActionResult<IEnumerable<DirectorDto>>> GetDirectors()
         {
-            var dto = _context.Director.Include(d => d.ContactInfo).Select(d => new DirectorDto(d.Name, d.DateOfBirth, d.ContactInfo));
+            var dto = _context.Director.Include(d => d.ContactInfo).Select(d => new DirectorDto(d.Name, d.DateOfBirth, new ContactInfoDto(d.ContactInfo.Email, d.ContactInfo.PhoneNr)));
             return Ok(await dto.ToListAsync());
         }
 
@@ -110,7 +110,7 @@ namespace API_Exercise1_MovieCard.Controllers
                     (
                         d.Name,
                         d.DateOfBirth,
-                        d.ContactInfo
+                        new ContactInfoDto(d.ContactInfo.Email, d.ContactInfo.PhoneNr)
                     ))
                 .FirstOrDefaultAsync();
 
@@ -215,7 +215,7 @@ namespace API_Exercise1_MovieCard.Controllers
                     (
                         m.Director.Name,
                         m.Director.DateOfBirth,
-                        m.Director.ContactInfo
+                        new ContactInfoDto(m.Director.ContactInfo.Email, m.Director.ContactInfo.PhoneNr)
                     )
                 ))
                 .FirstOrDefaultAsync();
