@@ -15,7 +15,8 @@ namespace API_Exercise1_MovieCard
 
 
             builder.Services.AddControllers();
-            
+
+            builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 

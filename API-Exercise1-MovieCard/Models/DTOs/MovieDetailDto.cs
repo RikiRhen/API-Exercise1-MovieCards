@@ -2,5 +2,5 @@
 
 namespace API_Exercise1_MovieCard.Models.DTOs
 {
-    public record MovieDetailDto(int Id, string Title, int Rating, string ReleaseDate, string Description, ICollection<string> Genres, ICollection<string> Actors, DirectorDto Director);
+    public record MovieDetailDto(int Id, string Title, int Rating, string ReleaseDate, string Description, ICollection<string> GenreNames, ICollection<string> ActorNames, DirectorDto Director);
 }
