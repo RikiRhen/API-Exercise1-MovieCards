@@ -103,12 +103,14 @@ namespace API_Exercise1_MovieCard.Controllers
             return Ok(dto);
         }
 
+        //CREATE NEW MOVIE
+        //POST: api/Movies
         [HttpPost("Movies")]
         public async Task<ActionResult<Movie>> CreateMovie(MovieForCreationDto newMovie)
         {
             if (newMovie == null)
             {
-                return BadRequest("newMovie was Null");
+                return BadRequest("A body that results in a null object was sent with request.");
             }
 
             var director = await _context.Director.FindAsync(newMovie.DirectorId);
@@ -118,7 +120,6 @@ namespace API_Exercise1_MovieCard.Controllers
             }
 
             var finalMovieToAdd = _mapper.Map<Movie>(newMovie);
-            finalMovieToAdd.Director = director;
 
             _context.Movie.Add(finalMovieToAdd);
             await _context.SaveChangesAsync();
@@ -129,6 +130,8 @@ namespace API_Exercise1_MovieCard.Controllers
             return CreatedAtAction(nameof(GetMovie), new { id = finalMovieToAdd.Id }, movieDto);
         }
 
+        //REPLACE EXISTING MOVIE
+        //PUT: api/Movies/5
         [HttpPut("Movies/{movieId}")]
         public async Task<ActionResult> UpdateMovie(int movieId, MovieForUpdateDto updateMovie)
         {
@@ -145,7 +148,8 @@ namespace API_Exercise1_MovieCard.Controllers
 
         }
 
-
+        //DELETE EXISTING MOVIE
+        //DELETE: api/Movies/5
         [HttpDelete("Movies/{id}")]
         public async Task<IActionResult> DeleteMovie(int id)
         {
@@ -161,23 +165,19 @@ namespace API_Exercise1_MovieCard.Controllers
             return NoContent();
         }
 
+        //GET DETAILED INFORMATION ABOUT MOVIE
+        //GET: api/Movies/5/details
         [HttpGet("Movies/{id}/details")]
         public async Task<ActionResult<IEnumerable<MovieDetailDto>>> GetMovieDetails(int id)
         {
 
-            var movie = await _context.Movie
+            var dto = await _context.Movie
                 .Include(m => m.Director)
                 .Include(m => m.Director.ContactInfo)
                 .Include(m => m.Actors)
                 .Include(m => m.Genres)
+                .ProjectTo<MovieDetailDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (movie == null)
-            {
-                return NotFound();
-            }
-
-            var dto = _mapper.Map<MovieDetailDto>(movie);
 
             if (dto == null)
             {
