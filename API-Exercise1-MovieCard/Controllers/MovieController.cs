@@ -29,12 +29,47 @@ namespace API_Exercise1_MovieCard.Controllers
         
         // GET MOVIES
         //GET: api/Movies
-        [HttpGet("Movies")]
-        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies()
-        {
-            var dto = await _context.Movie.Include(m => m.Director).ProjectTo<MovieDto>(_mapper.ConfigurationProvider).ToListAsync();
+        //[HttpGet("Movies")]
+        //public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies()
+        //{
+        //    var dto = await _context.Movie.Include(m => m.Director).ProjectTo<MovieDto>(_mapper.ConfigurationProvider).ToListAsync();
 
-            return Ok(dto);
+        //    return Ok(dto);
+        //}
+
+        [HttpGet("Movies")]
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(string? title,string? genre, string? director)
+        {
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                title = title.Trim();
+                var dtoTitle = await _context.Movie
+                    .Where(m => m.Title == title)
+                    .Include(m => m.Director)
+                    .ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
+                return Ok(dtoTitle);
+            } 
+            else if (!string.IsNullOrWhiteSpace(genre))
+            {
+                genre = genre.Trim();
+                var dtoGenre = await _context.Movie
+                    .Where(m => m.Genres.Any(g => g.GenreName == genre))
+                    .Include(m => m.Director)
+                    .ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
+                return Ok(dtoGenre);
+            }
+            else if (!string.IsNullOrWhiteSpace(director))
+            {
+                director = director.Trim();
+                var dtoDirector = await _context.Movie.Where(m => m.Director.Name == director).Include(m => m.Director).ProjectTo<MovieDto>(_mapper.ConfigurationProvider).ToListAsync();
+                return Ok(dtoDirector);
+            }
+
+            var dtoBlank = await _context.Movie.Include(m => m.Director).ProjectTo<MovieDto>(_mapper.ConfigurationProvider).ToListAsync();
+            return Ok(dtoBlank);
+
         }
 
         // GET ACTORS
@@ -113,6 +148,25 @@ namespace API_Exercise1_MovieCard.Controllers
                 return BadRequest("A body that results in a null object was sent with request.");
             }
 
+            if (DateTime.TryParse(newMovie.ReleaseDate, out DateTime parsedDate))
+            {
+                if (parsedDate > DateTime.Now)
+                {
+                    return BadRequest("Release date of movie cannot be set in the future");
+                }
+            }
+
+            var movieExists = await _context.Movie.FirstOrDefaultAsync(m => m.Title == newMovie.Title);
+            if (movieExists != null)
+            {
+                return BadRequest("A movie with that title already exists");
+            }
+
+            if (newMovie.Rating < 1 || newMovie.Rating > 10)
+            {
+                return BadRequest("Rating of a movie should be between 1-10");
+            }
+
             var director = await _context.Director.FindAsync(newMovie.DirectorId);
             if (director == null)
             {
@@ -128,6 +182,32 @@ namespace API_Exercise1_MovieCard.Controllers
 
 
             return CreatedAtAction(nameof(GetMovie), new { id = finalMovieToAdd.Id }, movieDto);
+        }
+
+        //CREATE NEW ACTOR
+        //POST: api/Actors
+        [HttpPost("Actors")]
+        public async Task<ActionResult<Actor>> CreateActor(ActorForCreationDto newActor)
+        {
+            if (newActor == null)
+            {
+                return BadRequest("A body that results in a null object was sent with request.");
+            }
+
+            var actorExists = await _context.Actor.FirstOrDefaultAsync(a => a.Name == newActor.Name && a.DateOfBirth == newActor.DateOfBirth);
+            if (actorExists != null)
+            {
+                return BadRequest("An actor with that information already exists. Duplicates are not allowed");
+            }
+
+            var newActorToAdd = _mapper.Map<Actor>(newActor);
+
+            _context.Actor.Add(newActorToAdd);
+            await _context.SaveChangesAsync();
+
+            var actorDto = _mapper.Map<ActorDto>(newActorToAdd);
+
+            return CreatedAtAction(nameof(GetActor), new { id = newActorToAdd.Id }, actorDto);
         }
 
         //REPLACE EXISTING MOVIE
