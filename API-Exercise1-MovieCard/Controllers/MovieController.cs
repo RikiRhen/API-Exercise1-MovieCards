@@ -30,7 +30,7 @@ namespace API_Exercise1_MovieCard.Controllers
         // GET MOVIES
         //GET: api/Movies
         [HttpGet("Movies")]
-        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(string? title, string? genre, string? director)
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(string? title, string? genre, string? director, string? sortBy, string? sortOrder)
         {
             var query = _context.Movie.AsQueryable();
 
@@ -50,7 +50,18 @@ namespace API_Exercise1_MovieCard.Controllers
                 director = director.Trim().ToLower();
                 query = query.Where(m => m.Director.Name.Replace(" ","").ToLower().Equals(director));
             }
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                bool isDescending = !string.IsNullOrEmpty(sortOrder) && sortOrder.Equals("desc");
 
+                query = sortBy.ToLower() switch
+                {
+                    "title" => isDescending ? query.OrderByDescending(m => m.Title) : query.OrderBy(m => m.Title),
+                    "rating" => isDescending ? query.OrderByDescending(m => m.Rating) : query.OrderBy(m => m.Rating),
+                    "realeasedate" => isDescending ? query.OrderByDescending(m => m.ReleaseDate) : query.OrderBy(m => m.ReleaseDate),
+                    _ => query.OrderBy(m => m.Title)
+                };
+            }
 
             var sökning = query.ToQueryString();
             Console.WriteLine(sökning);
@@ -60,7 +71,6 @@ namespace API_Exercise1_MovieCard.Controllers
                 .ToListAsync();
 
             return Ok(dtoMovies);
-
         }
 
         // GET ACTORS
