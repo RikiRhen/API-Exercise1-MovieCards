@@ -29,46 +29,37 @@ namespace API_Exercise1_MovieCard.Controllers
         
         // GET MOVIES
         //GET: api/Movies
-        //[HttpGet("Movies")]
-        //public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies()
-        //{
-        //    var dto = await _context.Movie.Include(m => m.Director).ProjectTo<MovieDto>(_mapper.ConfigurationProvider).ToListAsync();
-
-        //    return Ok(dto);
-        //}
-
         [HttpGet("Movies")]
-        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(string? title,string? genre, string? director)
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(string? title, string? genre, string? director)
         {
-            if (!string.IsNullOrWhiteSpace(title))
+            var query = _context.Movie.AsQueryable();
+
+            if (!string.IsNullOrEmpty(title))
             {
                 title = title.Trim();
-                var dtoTitle = await _context.Movie
-                    .Where(m => m.Title == title)
-                    .Include(m => m.Director)
-                    .ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
-                return Ok(dtoTitle);
-            } 
-            else if (!string.IsNullOrWhiteSpace(genre))
+                query = query.Where(m => m.Title == title);
+            }
+            if (!string.IsNullOrEmpty(genre))
             {
                 genre = genre.Trim();
-                var dtoGenre = await _context.Movie
-                    .Where(m => m.Genres.Any(g => g.GenreName == genre))
-                    .Include(m => m.Director)
-                    .ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
-                return Ok(dtoGenre);
-            }
-            else if (!string.IsNullOrWhiteSpace(director))
-            {
-                director = director.Trim();
-                var dtoDirector = await _context.Movie.Where(m => m.Director.Name == director).Include(m => m.Director).ProjectTo<MovieDto>(_mapper.ConfigurationProvider).ToListAsync();
-                return Ok(dtoDirector);
+                query = query.Include(m => m.Genres).Where(m => m.Genres.Any(g => g.GenreName == genre));
             }
 
-            var dtoBlank = await _context.Movie.Include(m => m.Director).ProjectTo<MovieDto>(_mapper.ConfigurationProvider).ToListAsync();
-            return Ok(dtoBlank);
+            if (!string.IsNullOrEmpty(director))
+            {
+                director = director.Trim().ToLower();
+                query = query.Where(m => m.Director.Name.Replace(" ","").ToLower().Equals(director));
+            }
+
+
+            var sökning = query.ToQueryString();
+            Console.WriteLine(sökning);
+            var dtoMovies = await query
+                .Include(m => m.Director)
+                .ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return Ok(dtoMovies);
 
         }
 
