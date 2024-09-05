@@ -214,10 +214,10 @@ namespace API_Exercise1_MovieCard.Controllers
 
         //REPLACE EXISTING MOVIE
         //PUT: api/Movies/5
-        [HttpPut("Movies/{movieId}")]
-        public async Task<ActionResult> UpdateMovie(int movieId, MovieForUpdateDto updateMovie)
+        [HttpPut("Movies/{id}")]
+        public async Task<ActionResult> UpdateMovie(int id, MovieForUpdateDto updateMovie)
         {
-            var movie = await _context.Movie.Include(m => m.Director).Include(m => m.Actors).Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);
+            var movie = await _context.Movie.Include(m => m.Director).Include(m => m.Actors).Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == id);
             if (movie == null)
             {
                 return NotFound();
@@ -230,9 +230,72 @@ namespace API_Exercise1_MovieCard.Controllers
 
         }
 
-        //ADD ACTOR TO EXISTING MOVIE
-        //PUT: api/Movies/5
-        
+        //ADD ACTOR TO EXISTING MOVIE VIA DTOS
+        //PUT: api/Movies/5/ActorsByDto
+        [HttpPut("Movies/{id}/ActorsByDto")]
+        public async Task<ActionResult> AddActorToMovieDto(int id, List<ActorDto> actors)
+        {
+            var movie = await _context.Movie
+                .Include(m => m.Actors)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (movie == null)
+            {
+                return NotFound("No movie with that ID was found in the database");
+            }
+
+            if (actors.Any())
+            {
+                foreach (var actorDto in actors)
+                {
+                    var actor = await _context.Actor.FirstOrDefaultAsync(a => a.Name == actorDto.Name);
+                    if (actor == null)
+                    {
+                        return NotFound($"An actor with the name {actorDto.Name} was not found in the database");
+                    }
+                    if (!movie.Actors.Contains(actor))
+                    {
+                        movie.Actors.Add(actor);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+
+        //ADD ACTOR TO EXISTING MOVIE VIA IDS
+        //PUT: api/Movies/5/ActorsByID
+        [HttpPut("Movies/{id}/ActorsById")]
+        public async Task<ActionResult> AddActorToMovieId(int id, /*List<ActorDto> addActors,*/ List<int> actorIds)
+        {
+            var movie = await _context.Movie
+                .Include(m => m.Actors)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (movie == null)
+            {
+                return NotFound("No movie with that ID was found in the database");
+            }
+
+            if (actorIds.Any())
+            {
+                foreach (var actorId in actorIds)
+                {
+                    var actor = await _context.Actor.FirstOrDefaultAsync(m => m.Id == actorId);
+                    if (actor == null)
+                    {
+                        return NotFound($"An actor with the ID {actorId} was not found in the database");
+                    }
+                    if (!movie.Actors.Contains(actor))
+                    {
+                        movie.Actors.Add(actor);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+            }
 
         //PARTIALLY UPDATE EXISTING MOVIE
         //PATCH: api/Movies/5
