@@ -31,7 +31,7 @@ namespace API_Exercise1_MovieCard.Controllers
         // GET MOVIES
         //GET: api/Movies
         [HttpGet("Movies")]
-        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(string? title, string? genre, string? director, string? sortBy, string? sortOrder)
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(string? title, string? genre, string? director, string? actor, string? releaseDate, string? sortBy, string? sortOrder, bool detailed = false)
         {
             var query = _context.Movie.AsQueryable();
 
@@ -51,6 +51,19 @@ namespace API_Exercise1_MovieCard.Controllers
                 director = director.Trim().ToLower();
                 query = query.Where(m => m.Director.Name.Replace(" ","").ToLower().Equals(director));
             }
+
+            if (!string.IsNullOrEmpty(actor))
+            {
+                actor = actor.Trim().ToLower();
+                query = query.Include(m => m.Actors).Where(m => m.Actors.Any(a => a.Name.Replace(" ", "").ToLower().Equals(actor)));
+            }
+
+            if (!string.IsNullOrEmpty(releaseDate))
+            {
+                releaseDate = releaseDate.Trim();
+                query = query.Where(m => m.ReleaseDate == releaseDate);
+            }
+
             if (!string.IsNullOrEmpty(sortBy))
             {
                 bool isDescending = !string.IsNullOrEmpty(sortOrder) && sortOrder.Equals("desc");
@@ -60,18 +73,31 @@ namespace API_Exercise1_MovieCard.Controllers
                     "title" => isDescending ? query.OrderByDescending(m => m.Title) : query.OrderBy(m => m.Title),
                     "rating" => isDescending ? query.OrderByDescending(m => m.Rating) : query.OrderBy(m => m.Rating),
                     "realeasedate" => isDescending ? query.OrderByDescending(m => m.ReleaseDate) : query.OrderBy(m => m.ReleaseDate),
-                    _ => query.OrderBy(m => m.Title)
+                    _ => query.OrderBy(m => m.Id)
                 };
             }
 
-            var sökning = query.ToQueryString();
-            Console.WriteLine(sökning);
-            var dtoMovies = await query
+            if (detailed)
+            {
+                var queryResults = await query
                 .Include(m => m.Director)
-                .ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
+                .Include(m => m.Director.ContactInfo)
+                .Include(m => m.Actors)
+                .Include(m => m.Genres)
+                .ProjectTo<MovieDetailDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
-            return Ok(dtoMovies);
+                return Ok(queryResults);
+            }
+            else
+            {
+                var queryResults = await query
+                    .Include(m => m.Director)
+                    .ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
+
+                return Ok(queryResults);
+            }
         }
 
         // GET ACTORS
@@ -250,7 +276,8 @@ namespace API_Exercise1_MovieCard.Controllers
                     var actor = await _context.Actor.FirstOrDefaultAsync(a => a.Name == actorDto.Name);
                     if (actor == null)
                     {
-                        return NotFound($"An actor with the name {actorDto.Name} was not found in the database");
+                        actor = new Actor { Name = actorDto.Name, DateOfBirth = actorDto.DateOfBirth };
+                        _context.Actor.Add(actor);
                     }
                     if (!movie.Actors.Contains(actor))
                     {
@@ -258,9 +285,23 @@ namespace API_Exercise1_MovieCard.Controllers
                     }
                 }
             }
+            
+            var dto = await _context.Movie
+                .Include(m => m.Director)
+                .Include(m => m.Director.ContactInfo)
+                .Include(m => m.Actors)
+                .Include(m => m.Genres)
+                .ProjectTo<MovieDetailDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (dto == null)
+            {
+                return NotFound("Failed to create MovieDetailDto of updated Movie");
+            }
 
             await _context.SaveChangesAsync();
-            return NoContent();
+            //return NoContent();
+            return CreatedAtAction(nameof(GetMovie), new { id = movie.Id }, dto);
         }
 
 
@@ -293,9 +334,39 @@ namespace API_Exercise1_MovieCard.Controllers
                 }
             }
 
-            await _context.SaveChangesAsync();
-            return NoContent();
+            //if (addActors.Any())
+            //{
+            //    foreach (var actorDto in addActors)
+            //    {
+            //        var actor = await _context.Actor.FirstOrDefaultAsync(a => a.Name == actorDto.Name);
+            //        if (actor == null)
+            //        {
+            //            return NotFound($"An actor with the name {actorDto.Name} was not found in the database");
+            //        }
+            //        if (!movie.Actors.Contains(actor))
+            //        {
+            //            movie.Actors.Add(actor);
+            //        }
+            //    }
+            //}
+
+            var dto = await _context.Movie
+                .Include(m => m.Director)
+                .Include(m => m.Director.ContactInfo)
+                .Include(m => m.Actors)
+                .Include(m => m.Genres)
+                .ProjectTo<MovieDetailDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (dto == null)
+            {
+                return NotFound("Failed to create MovieDetailDto of updated Movie");
             }
+
+            await _context.SaveChangesAsync();
+            //return NoContent();
+            return CreatedAtAction(nameof(GetMovie), new { id = movie.Id }, dto);
+        }
 
         //PARTIALLY UPDATE EXISTING MOVIE
         //PATCH: api/Movies/5
