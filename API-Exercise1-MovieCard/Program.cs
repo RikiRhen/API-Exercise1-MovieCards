@@ -14,7 +14,9 @@ namespace API_Exercise1_MovieCard
                 options.UseSqlServer(builder.Configuration.GetConnectionString("MovieCardContext") ?? throw new InvalidOperationException("Connection string 'MovieCardContext' not found.")));
 
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddNewtonsoftJson()
+                .AddXmlDataContractSerializerFormatters();
 
             builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
             builder.Services.AddEndpointsApiExplorer();

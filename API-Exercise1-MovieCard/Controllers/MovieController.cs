@@ -10,6 +10,7 @@ using API_Exercise1_MovieCard.Models.DTOs;
 using API_Exercise1_MovieCard.Models.Entities;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace API_Exercise1_MovieCard.Controllers
 {
@@ -227,6 +228,39 @@ namespace API_Exercise1_MovieCard.Controllers
 
             return NoContent();
 
+        }
+
+        //ADD ACTOR TO EXISTING MOVIE
+        //PUT: api/Movies/5
+        
+
+        //PARTIALLY UPDATE EXISTING MOVIE
+        //PATCH: api/Movies/5
+        [HttpPatch("Movies/{id}")]
+        public async Task<ActionResult> PatchMovie(int id, JsonPatchDocument<MovieForUpdateDto> patchDocument)
+        {
+            var movie = await _context.Movie.FirstOrDefaultAsync(m => m.Id == id);
+            if (movie == null)
+            {
+                return NotFound("A movie with that ID was not found in the database");
+            }
+
+            var movieToPatch = _mapper.Map<MovieForUpdateDto>(movie);
+            patchDocument.ApplyTo(movieToPatch, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Patch document caused ModelState to become invalid");
+            }
+
+            movie.Title = movieToPatch.Title;
+            movie.Rating = movieToPatch.Rating;
+            movie.ReleaseDate = movieToPatch.ReleaseDate;
+            movie.Description = movieToPatch.Description;
+            movie.DirectorId = movieToPatch.DirectorId;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
         //DELETE EXISTING MOVIE
