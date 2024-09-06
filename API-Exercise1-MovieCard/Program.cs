@@ -1,7 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using API_Exercise1_MovieCard.Data;
-using API_Exercise1_MovieCard.Extensions;
+using MovieCard.API.Extensions;
+using MovieCard.Infrastructure.Data;
+using MovieCard.Infrastructure.Repository;
+using MovieCard.Contracts;
+using Service;
+using Service.Contracts;
+using System.Reflection.Metadata;
+using System.Net;
 
 namespace API_Exercise1_MovieCard
 {
@@ -10,17 +16,22 @@ namespace API_Exercise1_MovieCard
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddDbContext<MovieCardContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("MovieCardContext") ?? throw new InvalidOperationException("Connection string 'MovieCardContext' not found.")));
 
+            //builder.Services.AddDbContext<MovieCardContext>(options =>
+            //    options.UseSqlServer(builder.Configuration.GetConnectionString("MovieCardContext") ?? throw new InvalidOperationException("Connection string 'MovieCardContext' not found.")));
+            builder.Services.ConfigureSql(builder.Configuration);
 
-            builder.Services.AddControllers()
-                .AddNewtonsoftJson()
-                .AddXmlDataContractSerializerFormatters();
+            builder.Services.AddControllers(configure => configure.ReturnHttpNotAcceptable = true)
+                            .AddNewtonsoftJson()
+                            .AddApplicationPart(typeof(AssemblyReference).Assembly);
 
             builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.ConfigureOpenApi();
+
+            //Flytta dessa till ServiceExtensions, kolla GitHub
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IServiceManager, ServiceManager>();
 
             var app = builder.Build();
 
@@ -35,7 +46,6 @@ namespace API_Exercise1_MovieCard
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

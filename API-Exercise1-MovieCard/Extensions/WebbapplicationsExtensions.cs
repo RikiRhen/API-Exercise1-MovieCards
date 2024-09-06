@@ -1,8 +1,8 @@
-﻿using API_Exercise1_MovieCard.Data;
+﻿using MovieCard.Infrastructure.Data;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 
-namespace API_Exercise1_MovieCard.Extensions
+namespace MovieCard.API.Extensions
 {
     public static class WebbapplicationsExtensions
     {
