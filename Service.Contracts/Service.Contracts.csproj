@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MovieCard.Shared\MovieCard.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

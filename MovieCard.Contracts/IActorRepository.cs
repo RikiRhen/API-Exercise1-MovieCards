@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MovieCard.Models.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,9 @@ using System.Threading.Tasks;
 
 namespace MovieCard.Contracts
 {
-    internal class IActorRepository
+    public interface IActorRepository
     {
+        Task<IEnumerable<Actor>> GetActorsAsync(bool trackChanges);
+        Task<Actor?> GetActorByNameAsync(string name, bool trackChanges);
     }
 }

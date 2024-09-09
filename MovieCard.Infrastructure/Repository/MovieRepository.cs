@@ -10,23 +10,19 @@ using System.Threading.Tasks;
 
 namespace MovieCard.Infrastructure.Repository
 {
-    internal class MovieRepository : IMovieRepository
+    public class MovieRepository : RepositoryBase<Movie>, IMovieRepository
     {
-        private readonly MovieCardContext _context;
 
-        public MovieRepository(MovieCardContext context)
+        public MovieRepository(MovieCardContext context): base(context){}
+
+        public async Task<IEnumerable<Movie>> GetMoviesAsync(bool trackChanges)
         {
-            _context = context;
+            return await GetAll(trackChanges).ToListAsync();
         }
 
-        public async Task<IEnumerable<Movie>> GetMoviesAsync()
+        public async Task<Movie?> GetMovieByIdAsync(int id, bool trackChanges)
         {
-            return await _context.Movie.ToListAsync();
-        }
-
-        public async Task<Movie> GetMovieByIdAsync(int id)
-        {
-            return await _context.Movie.FindAsync(id);
+            return await FindByCondition(m => m.Id.Equals(id), trackChanges).FirstOrDefaultAsync();
         }
     }
 }

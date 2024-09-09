@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace MovieCard.Contracts
 {
-    public class IUnitOfWork
+    public interface IUnitOfWork
     {
+        IActorRepository Actors { get; }
+        IDirectorRepository Directors { get; }
+        IMovieRepository Movies { get; }
+
+        Task CompleteAsync();
     }
 }
