@@ -28,10 +28,8 @@ namespace API_Exercise1_MovieCard
             builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.ConfigureOpenApi();
-
-            //Flytta dessa till ServiceExtensions, kolla GitHub
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddScoped<IServiceManager, ServiceManager>();
+            builder.Services.ConfigureServices();
+            builder.Services.ConfigureRepositories();
 
             var app = builder.Build();
 

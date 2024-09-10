@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Service.Contracts;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using MovieCard.Infrastructure.Data;
 using MovieCard.Shared.DTOs;
 using MovieCard.Models.Entities;
+using Service;
 
 namespace MovieCard.Presentation.Controllers
 {
@@ -19,13 +21,11 @@ namespace MovieCard.Presentation.Controllers
     [Produces("application/json")]
     public class MovieController : ControllerBase
     {
-        private readonly MovieCardContext _context;
-        private readonly IMapper _mapper;
+        private readonly IServiceManager _serviceManager;
 
-        public MovieController(MovieCardContext context, IMapper mapper)
+        public MovieController(IServiceManager serviceManager)
         {
-            _context = context;
-            this._mapper = mapper;
+            _serviceManager = serviceManager;
         }
         
         // GET MOVIES
@@ -33,7 +33,8 @@ namespace MovieCard.Presentation.Controllers
         [HttpGet("Movies")]
         public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(string? title, string? genre, string? director, string? actor, string? releaseDate, string? sortBy, string? sortOrder, bool detailed = false)
         {
-            var query = _context.Movie.AsQueryable();
+            //var query = _context.Movies.AsQueryable();
+            var query = await _serviceManager.MovieService.
 
             if (!string.IsNullOrEmpty(title))
             {
@@ -105,7 +106,7 @@ namespace MovieCard.Presentation.Controllers
         [HttpGet("Actors")]
         public async Task<ActionResult<IEnumerable<ActorDto>>> GetActors()
         {
-            var dto = await _context.Actor.ProjectTo<ActorDto>(_mapper.ConfigurationProvider).ToListAsync();
+            var dto = await _serviceManager.Actor.ProjectTo<ActorDto>(_mapper.ConfigurationProvider).ToListAsync();
             return Ok(dto);
         }
 
@@ -114,7 +115,7 @@ namespace MovieCard.Presentation.Controllers
         [HttpGet("Directors")]
         public async Task<ActionResult<IEnumerable<DirectorDto>>> GetDirectors()
         {
-            var dto = await _context.Director.ProjectTo<DirectorDto>(_mapper.ConfigurationProvider).ToListAsync();
+            var dto = await _serviceManager.Director.ProjectTo<DirectorDto>(_mapper.ConfigurationProvider).ToListAsync();
             return Ok(dto);
         }
 
@@ -124,7 +125,7 @@ namespace MovieCard.Presentation.Controllers
         public async Task<ActionResult<MovieDto>> GetMovie(int id)
         {
 
-            var dto = _mapper.Map<MovieDto>(await _context.Movie.Include(m => m.Director).FirstOrDefaultAsync(m => m.Id == id));
+            var dto = _mapper.Map<MovieDto>(await _serviceManager.Movie.Include(m => m.Director).FirstOrDefaultAsync(m => m.Id == id));
 
             if (dto == null)
             {
@@ -140,7 +141,7 @@ namespace MovieCard.Presentation.Controllers
         public async Task<ActionResult<ActorDto>> GetActor(int id)
         {
 
-            var dto = _mapper.Map<ActorDto>(await _context.Actor.FirstOrDefaultAsync(a => a.Id == id));
+            var dto = _mapper.Map<ActorDto>(await _serviceManager.Actor.FirstOrDefaultAsync(a => a.Id == id));
 
             if (dto == null)
             {
@@ -156,7 +157,7 @@ namespace MovieCard.Presentation.Controllers
         public async Task<ActionResult<DirectorDto>> GetDirector(int id)
         {
 
-            var dto = _mapper.Map<DirectorDto>(await _context.Director.FirstOrDefaultAsync(d => d.Id == id));
+            var dto = _mapper.Map<DirectorDto>(await _serviceManager.Director.FirstOrDefaultAsync(d => d.Id == id));
 
             if (dto == null)
             {
@@ -184,7 +185,7 @@ namespace MovieCard.Presentation.Controllers
                 }
             }
 
-            var movieExists = await _context.Movie.FirstOrDefaultAsync(m => m.Title == newMovie.Title);
+            var movieExists = await _serviceManager.Movie.FirstOrDefaultAsync(m => m.Title == newMovie.Title);
             if (movieExists != null)
             {
                 return BadRequest("A movie with that title already exists");
@@ -195,7 +196,7 @@ namespace MovieCard.Presentation.Controllers
                 return BadRequest("Rating of a movie should be between 1-10");
             }
 
-            var director = await _context.Director.FindAsync(newMovie.DirectorId);
+            var director = await _serviceManager.Director.FindAsync(newMovie.DirectorId);
             if (director == null)
             {
                 return NotFound($"Director with ID {newMovie.DirectorId} was not found");
@@ -203,8 +204,8 @@ namespace MovieCard.Presentation.Controllers
 
             var finalMovieToAdd = _mapper.Map<Movie>(newMovie);
 
-            _context.Movie.Add(finalMovieToAdd);
-            await _context.SaveChangesAsync();
+            _serviceManager.Movie.Add(finalMovieToAdd);
+            await _serviceManager.SaveChangesAsync();
 
             var movieDto = _mapper.Map<MovieDto>(finalMovieToAdd);
 
@@ -222,7 +223,7 @@ namespace MovieCard.Presentation.Controllers
                 return BadRequest("A body that results in a null object was sent with request.");
             }
 
-            var actorExists = await _context.Actor.FirstOrDefaultAsync(a => a.Name == newActor.Name && a.DateOfBirth == newActor.DateOfBirth);
+            var actorExists = await _serviceManager.Actor.FirstOrDefaultAsync(a => a.Name == newActor.Name && a.DateOfBirth == newActor.DateOfBirth);
             if (actorExists != null)
             {
                 return BadRequest("An actor with that information already exists. Duplicates are not allowed");
@@ -230,8 +231,8 @@ namespace MovieCard.Presentation.Controllers
 
             var newActorToAdd = _mapper.Map<Actor>(newActor);
 
-            _context.Actor.Add(newActorToAdd);
-            await _context.SaveChangesAsync();
+            _serviceManager.Actor.Add(newActorToAdd);
+            await _serviceManager.SaveChangesAsync();
 
             var actorDto = _mapper.Map<ActorDto>(newActorToAdd);
 
@@ -243,14 +244,14 @@ namespace MovieCard.Presentation.Controllers
         [HttpPut("Movies/{id}")]
         public async Task<ActionResult> UpdateMovie(int id, MovieForUpdateDto updateMovie)
         {
-            var movie = await _context.Movie.Include(m => m.Director).Include(m => m.Actors).Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == id);
+            var movie = await _serviceManager.Movie.Include(m => m.Director).Include(m => m.Actors).Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == id);
             if (movie == null)
             {
                 return NotFound();
             }
 
             _mapper.Map(updateMovie, movie);
-            await _context.SaveChangesAsync();
+            await _serviceManager.SaveChangesAsync();
 
             return NoContent();
 
@@ -261,7 +262,7 @@ namespace MovieCard.Presentation.Controllers
         [HttpPut("Movies/{id}/ActorsByDto")]
         public async Task<ActionResult> AddActorToMovieDto(int id, List<ActorDto> actors)
         {
-            var movie = await _context.Movie
+            var movie = await _serviceManager.Movie
                 .Include(m => m.Actors)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (movie == null)
@@ -273,11 +274,11 @@ namespace MovieCard.Presentation.Controllers
             {
                 foreach (var actorDto in actors)
                 {
-                    var actor = await _context.Actor.FirstOrDefaultAsync(a => a.Name == actorDto.Name);
+                    var actor = await _serviceManager.Actor.FirstOrDefaultAsync(a => a.Name == actorDto.Name);
                     if (actor == null)
                     {
                         actor = new Actor { Name = actorDto.Name, DateOfBirth = actorDto.DateOfBirth };
-                        _context.Actor.Add(actor);
+                        _serviceManager.Actor.Add(actor);
                     }
                     if (!movie.Actors.Contains(actor))
                     {
@@ -286,7 +287,7 @@ namespace MovieCard.Presentation.Controllers
                 }
             }
             
-            var dto = await _context.Movie
+            var dto = await _serviceManager.Movie
                 .Include(m => m.Director)
                 .Include(m => m.Director.ContactInfo)
                 .Include(m => m.Actors)
@@ -299,7 +300,7 @@ namespace MovieCard.Presentation.Controllers
                 return NotFound("Failed to create MovieDetailDto of updated Movie");
             }
 
-            await _context.SaveChangesAsync();
+            await _serviceManager.SaveChangesAsync();
             //return NoContent();
             return CreatedAtAction(nameof(GetMovie), new { id = movie.Id }, dto);
         }
@@ -310,7 +311,7 @@ namespace MovieCard.Presentation.Controllers
         [HttpPut("Movies/{id}/ActorsById")]
         public async Task<ActionResult> AddActorToMovieId(int id, /*List<ActorDto> addActors,*/ List<int> actorIds)
         {
-            var movie = await _context.Movie
+            var movie = await _serviceManager.Movie
                 .Include(m => m.Actors)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (movie == null)
@@ -322,7 +323,7 @@ namespace MovieCard.Presentation.Controllers
             {
                 foreach (var actorId in actorIds)
                 {
-                    var actor = await _context.Actor.FirstOrDefaultAsync(m => m.Id == actorId);
+                    var actor = await _serviceManager.Actor.FirstOrDefaultAsync(m => m.Id == actorId);
                     if (actor == null)
                     {
                         return NotFound($"An actor with the ID {actorId} was not found in the database");
@@ -350,7 +351,7 @@ namespace MovieCard.Presentation.Controllers
             //    }
             //}
 
-            var dto = await _context.Movie
+            var dto = await _serviceManager.Movie
                 .Include(m => m.Director)
                 .Include(m => m.Director.ContactInfo)
                 .Include(m => m.Actors)
@@ -363,7 +364,7 @@ namespace MovieCard.Presentation.Controllers
                 return NotFound("Failed to create MovieDetailDto of updated Movie");
             }
 
-            await _context.SaveChangesAsync();
+            await _serviceManager.SaveChangesAsync();
             //return NoContent();
             return CreatedAtAction(nameof(GetMovie), new { id = movie.Id }, dto);
         }
@@ -373,7 +374,7 @@ namespace MovieCard.Presentation.Controllers
         [HttpPatch("Movies/{id}")]
         public async Task<ActionResult> PatchMovie(int id, JsonPatchDocument<MovieForUpdateDto> patchDocument)
         {
-            var movie = await _context.Movie.FirstOrDefaultAsync(m => m.Id == id);
+            var movie = await _serviceManager.Movie.FirstOrDefaultAsync(m => m.Id == id);
             if (movie == null)
             {
                 return NotFound("A movie with that ID was not found in the database");
@@ -392,7 +393,7 @@ namespace MovieCard.Presentation.Controllers
             movie.ReleaseDate = movieToPatch.ReleaseDate;
             movie.Description = movieToPatch.Description;
             movie.DirectorId = movieToPatch.DirectorId;
-            await _context.SaveChangesAsync();
+            await _serviceManager.SaveChangesAsync();
 
             return NoContent();
         }
@@ -402,14 +403,14 @@ namespace MovieCard.Presentation.Controllers
         [HttpDelete("Movies/{id}")]
         public async Task<IActionResult> DeleteMovie(int id)
         {
-            var movie = await _context.Movie.FindAsync(id);
+            var movie = await _serviceManager.Movie.FindAsync(id);
             if (movie == null)
             {
                 return NotFound();
             }
 
-            _context.Movie.Remove(movie);
-            await _context.SaveChangesAsync();
+            _serviceManager.Movie.Remove(movie);
+            await _serviceManager.SaveChangesAsync();
 
             return NoContent();
         }
@@ -420,7 +421,7 @@ namespace MovieCard.Presentation.Controllers
         public async Task<ActionResult<IEnumerable<MovieDetailDto>>> GetMovieDetails(int id)
         {
 
-            var dto = await _context.Movie
+            var dto = await _serviceManager.Movie
                 .Include(m => m.Director)
                 .Include(m => m.Director.ContactInfo)
                 .Include(m => m.Actors)
