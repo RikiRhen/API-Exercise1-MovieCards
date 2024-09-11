@@ -19,7 +19,7 @@ namespace MovieCard.Infrastructure.Repository
 
         public MovieRepository(MovieCardContext context): base(context){}
 
-        //OBJECT MARKERAD
+        //OBJECT MARKERAD - Titta in på att skapa en basklass/interface för MovieDto och MovieDetailDto
         public async Task<IEnumerable<object>> GetMoviesAsync(string? title, string? genre, string? director, string? actor, string? releaseDate, string? sortBy, string? sortOrder, bool trackChanges, bool detailed, IMapper mapper)
         {
             var query = GetAll(trackChanges);
@@ -94,7 +94,7 @@ namespace MovieCard.Infrastructure.Repository
 
         public async Task<Movie?> GetMovieByIdAsync(int id, bool trackChanges)
         {
-            return await FindByCondition(m => m.Id.Equals(id), trackChanges).FirstOrDefaultAsync();
+            return await FindByCondition(m => m.Id.Equals(id), trackChanges).Include(m => m.Director).FirstOrDefaultAsync();
         }
     }
 }

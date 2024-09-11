@@ -65,14 +65,15 @@ namespace MovieCard.Presentation.Controllers
         {
 
             //var dto = _mapper.Map<MovieDto>(await _serviceManager.Movie.Include(m => m.Director).FirstOrDefaultAsync(m => m.Id == id));
+            var dto = await _serviceManager.MovieService.GetMovieDtoByIdAsync(id, false);
 
-            //if (dto == null)
-            //{
-            //    return NotFound();
-            //}
+            if (dto == null)
+            {
+                return NotFound();
+            }
 
-            //return Ok(dto);
-            throw new NotImplementedException();
+            return Ok(dto);
+            //throw new NotImplementedException();
         }
 
         //GET ACTOR BY ID
