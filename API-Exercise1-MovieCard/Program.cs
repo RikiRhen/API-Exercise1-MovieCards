@@ -8,6 +8,7 @@ using Service;
 using Service.Contracts;
 using System.Reflection.Metadata;
 using System.Net;
+using MovieCard.Presentation;
 
 namespace API_Exercise1_MovieCard
 {
@@ -23,10 +24,10 @@ namespace API_Exercise1_MovieCard
 
             builder.Services.AddControllers(configure => configure.ReturnHttpNotAcceptable = true)
                             .AddNewtonsoftJson()
-                            .AddApplicationPart(typeof(AssemblyReference).Assembly);
+                            .AddApplicationPart(typeof(AssemblyRef).Assembly);
 
             builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
-            builder.Services.AddEndpointsApiExplorer();
+            //builder.Services.AddEndpointsApiExplorer();
             builder.Services.ConfigureOpenApi();
             builder.Services.ConfigureServices();
             builder.Services.ConfigureRepositories();

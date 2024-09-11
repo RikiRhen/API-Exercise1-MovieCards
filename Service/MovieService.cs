@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore.Metadata;
 using MovieCard.Contracts;
+using MovieCard.Models.Entities;
 using MovieCard.Shared.DTOs;
 using Service.Contracts;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Service
 {
@@ -22,9 +24,12 @@ namespace Service
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<MovieDto>> GetMoviesAsync(bool trackChanges = false)
+        //OBJECT MARKERAD
+        public async Task<IEnumerable<object>> GetMoviesAsync(string? title, string? genre, string? director, string? actor, string? releaseDate, string? sortBy, string? sortOrder, bool trackChanges, bool detailed)
         {
-            return _mapper.Map<IEnumerable<MovieDto>>(await _uow.Movies.GetMoviesAsync(trackChanges));
+            var query = await _uow.Movies.GetMoviesAsync(title, genre, director, actor, releaseDate, sortBy, sortOrder, trackChanges, detailed, _mapper);
+            return query;
+            //return _mapper.Map<IEnumerable<MovieDto>>(await _uow.Movies.GetMoviesAsync(trackChanges));
         }
 
         public async Task<MovieDto> GetMovieDtoByIdAsync(int id, bool trackChanges = false)

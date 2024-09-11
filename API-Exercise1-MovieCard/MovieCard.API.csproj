@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -29,6 +29,7 @@
     <ProjectReference Include="..\MovieCard.Contracts\MovieCard.Contracts.csproj" />
     <ProjectReference Include="..\MovieCard.Infrastructure\MovieCard.Infrastructure.csproj" />
     <ProjectReference Include="..\MovieCard.Models\MovieCard.Models.csproj" />
+    <ProjectReference Include="..\MovieCard.Presentation\MovieCard.Presentation.csproj" />
     <ProjectReference Include="..\MovieCard.Shared\MovieCard.Shared.csproj" />
     <ProjectReference Include="..\Service.Contracts\Service.Contracts.csproj" />
     <ProjectReference Include="..\Service\Service.csproj" />
