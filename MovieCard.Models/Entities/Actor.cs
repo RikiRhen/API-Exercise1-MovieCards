@@ -1,4 +1,6 @@
-﻿namespace MovieCard.Models.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace MovieCard.Models.Entities
 {
     public class Actor
     {
@@ -9,6 +11,7 @@
 
         //Relationships -> N:M Movie
         //Navigation
+        [JsonIgnore]
         public ICollection<Movie> Movies { get; set; }
 
     }

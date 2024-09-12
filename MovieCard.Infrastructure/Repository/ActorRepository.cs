@@ -20,9 +20,9 @@ namespace MovieCard.Infrastructure.Repository
             return await GetAll(trackChanges).ToListAsync();
         }
 
-        public async Task<Actor?> GetActorByNameAsync(string name, bool trackChanges)
+        public async Task<Actor?> GetActorByIdAsync(int id, bool trackChanges)
         {
-            return await FindByCondition(a => a.Name.Replace(" ", "").ToLower().Equals(name.ToLower()), trackChanges).FirstOrDefaultAsync();
+            return await FindByCondition(a => a.Id == id, false).FirstOrDefaultAsync();
         }
     }
 }

@@ -10,6 +10,6 @@ namespace MovieCard.Contracts
     public interface IActorRepository
     {
         Task<IEnumerable<Actor>> GetActorsAsync(bool trackChanges);
-        Task<Actor?> GetActorByNameAsync(string name, bool trackChanges);
+        Task<Actor?> GetActorByIdAsync(int id, bool trackChanges);
     }
 }

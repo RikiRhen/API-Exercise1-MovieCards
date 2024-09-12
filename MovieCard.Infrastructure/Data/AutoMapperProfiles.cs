@@ -27,7 +27,8 @@ namespace MovieCard.Infrastructure.Data
             CreateMap<ContactInformation, ContactInfoDto>()
                 .ConstructUsing(src => new ContactInfoDto(src.Email, src.PhoneNr));
 
-            CreateMap<Actor, ActorDto>().ReverseMap();
+            CreateMap<Actor, ActorDto>()
+                .ConstructUsing(src => new ActorDto(src.Name,src.DateOfBirth));
 
             CreateMap<Director, DirectorDto>()
                 .ConstructUsing(src => new DirectorDto(

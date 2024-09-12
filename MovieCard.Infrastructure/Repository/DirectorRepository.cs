@@ -16,12 +16,12 @@ namespace MovieCard.Infrastructure.Repository
 
         public async Task<IEnumerable<Director>> GetDirectorsAsync(bool trackChanges)
         {
-            return await GetAll(trackChanges).ToListAsync();
+            return await GetAll(trackChanges).Include(d => d.ContactInfo).ToListAsync();
         }
 
         public async Task<Director?> GetDirectorByIdAsync(int id, bool trackChanges)
         {
-            return await FindByCondition(d => d.Id.Equals(id), trackChanges).FirstOrDefaultAsync();
+            return await FindByCondition(d => d.Id.Equals(id), trackChanges).Include(d => d.ContactInfo).FirstOrDefaultAsync();
         }
 
         public async Task<Director?> GetDirectorByNameAsync(string name, bool trackChanges)

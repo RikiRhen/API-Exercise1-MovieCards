@@ -21,14 +21,14 @@ namespace Service
             return _mapper.Map<IEnumerable<ActorDto>>(await _uow.Actors.GetActorsAsync(trackChanges));
         }
 
-        public async Task<ActorDto> GetActorDtoByNameAsync(string name, bool trackChanges = false)
+        public async Task<ActorDto> GetActorDtoByIdAsync(int id, bool trackChanges = false)
         {
-            var dto = await _uow.Actors.GetActorByNameAsync(name, trackChanges);
-            if (dto == null)
+            var actor = await _uow.Actors.GetActorByIdAsync(id, trackChanges);
+            if (actor == null)
             {
-                throw new ArgumentNullException(nameof(dto));
+                throw new ArgumentNullException(nameof(actor));
             }
-            return _mapper.Map<ActorDto>(dto);
+            return _mapper.Map<ActorDto>(actor);
         }
     }
 }

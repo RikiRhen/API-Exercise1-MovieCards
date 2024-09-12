@@ -33,29 +33,27 @@ namespace MovieCard.Presentation.Controllers
         [HttpGet("Movies")]
         public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(/*[FromQuery] MovieParams movieparams*/ string? title, string? genre, string? director, string? actor, string? releaseDate, string? sortBy, string? sortOrder, bool detailed = false, bool trackChanges = false)
         {
-            var query = await _serviceManager.MovieService.GetMoviesAsync(title, genre, director, actor, releaseDate, sortBy, sortOrder, trackChanges, detailed);
-            return Ok(query);
+            var movies = await _serviceManager.MovieService.GetMoviesAsync(title, genre, director, actor, releaseDate, sortBy, sortOrder, trackChanges, detailed);
+            return Ok(movies);
 
         }
 
         // GET ACTORS
         //GET: api/Actors
         [HttpGet("Actors")]
-        public async Task<ActionResult<IEnumerable<ActorDto>>> GetActors()
+        public async Task<ActionResult<IEnumerable<ActorDto>>> GetActors(bool trackChanges = false)
         {
-            //var dto = await _serviceManager.ActorService.ProjectTo<ActorDto>(_mapper.ConfigurationProvider).ToListAsync();
-            //return Ok(dto);
-            throw new NotImplementedException();
+            var actors = await _serviceManager.ActorService.GetActorsAsync(trackChanges);
+            return Ok(actors);
         }
 
         //GET DIRECTORS
         //GET: api/Directors
         [HttpGet("Directors")]
-        public async Task<ActionResult<IEnumerable<DirectorDto>>> GetDirectors()
+        public async Task<ActionResult<IEnumerable<DirectorDto>>> GetDirectors(bool trackChanges = false)
         {
-            //var dto = await _serviceManager.Director.ProjectTo<DirectorDto>(_mapper.ConfigurationProvider).ToListAsync();
-            //return Ok(dto);
-            throw new NotImplementedException();
+            var directors = await _serviceManager.DirectorService.GetDirectorsAsync(trackChanges);
+            return Ok(directors);
         }
 
         //GET MOVIE BY ID
@@ -78,16 +76,14 @@ namespace MovieCard.Presentation.Controllers
         [HttpGet("Actors/{id}", Name = "GetActor")]
         public async Task<ActionResult<ActorDto>> GetActor(int id)
         {
+            var actorDtoById = await _serviceManager.ActorService.GetActorDtoByIdAsync(id, false);
 
-            //var dto = _mapper.Map<ActorDto>(await _serviceManager.Actor.FirstOrDefaultAsync(a => a.Id == id));
+            if (actorDtoById == null)
+            {
+                return NotFound($"An actor with the ID {id} does not exist in the database");
+            }
 
-            //if (dto == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //return Ok(dto);
-            throw new NotImplementedException();
+            return Ok(actorDtoById);
         }
 
         //GET DIRECTOR BY ID
@@ -95,16 +91,13 @@ namespace MovieCard.Presentation.Controllers
         [HttpGet("Directors/{id}", Name = "GetDirector")]
         public async Task<ActionResult<DirectorDto>> GetDirector(int id)
         {
+            var directorDtoById = await _serviceManager.DirectorService.GetDirectorDtoByIdAsync(id, false);
+            if (directorDtoById == null)
+            {
+                return NotFound($"A director with the ID {id} does not exist in the database");
+            }
 
-            //var dto = _mapper.Map<DirectorDto>(await _serviceManager.Director.FirstOrDefaultAsync(d => d.Id == id));
-
-            //if (dto == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //return Ok(dto);
-            throw new NotImplementedException();
+            return Ok(directorDtoById);
         }
 
         //CREATE NEW MOVIE
