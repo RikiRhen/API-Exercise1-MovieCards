@@ -112,12 +112,6 @@ namespace MovieCard.Presentation.Controllers
         [HttpPost("Movies")]
         public async Task<ActionResult<Movie>> CreateMovie(MovieForCreationDto newMovie)
         {
-            var movie = await _serviceManager.MovieService.CreateNewMovieAsync(newMovie);
-            if (movie == null)
-            {
-                return BadRequest("The return body of the function call is null");
-            }
-
             if (DateTime.TryParse(newMovie.ReleaseDate, out DateTime parsedDate))
             {
                 if (parsedDate > DateTime.Now)
@@ -126,22 +120,28 @@ namespace MovieCard.Presentation.Controllers
                 }
             }
 
-            //var movieExists = await FindByCondition(m => m.Title.Equals(newMovie.Title), false).FirstOrDefaultAsync();
-            //if (movieExists != null)
-            //{
-            //    return movieExists;
-            //}
+            var movieexists = await _serviceManager.MovieService.GetMovieDtoByTitleAsync(newMovie.Title, false);
+            if (movieexists != null)
+            {
+                return BadRequest("A movie with that title already exists in the database");
+            }
 
             if (newMovie.Rating < 1 || newMovie.Rating > 10)
             {
                 return BadRequest("Rating of a movie should be between 1-10");
             }
 
-            //var director = await _serviceManager.Director.FindAsync(newMovie.DirectorId);
-            //if (director == null)
-            //{
-            //    return NotFound($"Director with ID {newMovie.DirectorId} was not found");
-            //}
+            var director = await _serviceManager.DirectorService.GetDirectorDtoByIdAsync(newMovie.DirectorId, false);
+            if (director == null)
+            {
+                return NotFound($"A director with ID {newMovie.DirectorId} was not found in the database");
+            }
+
+            var movie = await _serviceManager.MovieService.CreateNewMovieAsync(newMovie);
+            if (movie == null)
+            {
+                return BadRequest("The return body of the function call is null");
+            }
 
             return CreatedAtAction(nameof(GetMovie), new { id = movie.Id }, movie);  
         }

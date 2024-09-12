@@ -13,6 +13,7 @@ namespace Service.Contracts
         //OBJECT MARKERAD
         Task<IEnumerable<object>> GetMoviesAsync(string? title, string? genre, string? director, string? actor, string? releaseDate, string? sortBy, string? sortOrder, bool trackChanges, bool detailed);
         Task<MovieDto> GetMovieDtoByIdAsync(int id, bool trackChanges);
+        Task<MovieDto?> GetMovieDtoByTitleAsync(string title, bool trackChanges);
         Task<MovieDto?> CreateNewMovieAsync(MovieForCreationDto newMovie);
     }
 }

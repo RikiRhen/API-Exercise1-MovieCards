@@ -42,6 +42,19 @@ namespace Service
             return _mapper.Map<MovieDto>(dto);
         }
 
+        public async Task<MovieDto?> GetMovieDtoByTitleAsync(string title, bool trackChanges = false)
+        {
+            var dto = await _uow.Movies.GetMovieByTitleAsync(title, trackChanges);
+            if (dto != null)
+            {
+                return _mapper.Map<MovieDto>(dto);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public async Task<MovieDto?> CreateNewMovieAsync(MovieForCreationDto newMovie)
         {
             var movieToBeCreated = await _uow.Movies.CreateNewMovieAsync(newMovie);

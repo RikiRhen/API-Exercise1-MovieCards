@@ -10,6 +10,6 @@ namespace Service.Contracts
     public interface IDirectorService
     {
         Task<IEnumerable<DirectorDto>> GetDirectorsAsync(bool trackChanges);
-        Task<DirectorDto> GetDirectorDtoByIdAsync(int id, bool trackChanges);
+        Task<DirectorDto?> GetDirectorDtoByIdAsync(int id, bool trackChanges);
     }
 }

@@ -97,6 +97,11 @@ namespace MovieCard.Infrastructure.Repository
             return await FindByCondition(m => m.Id.Equals(id), trackChanges).Include(m => m.Director).FirstOrDefaultAsync();
         }
 
+        public async Task<Movie?> GetMovieByTitleAsync(string title, bool trackChanges)
+        {
+            return await FindByCondition(m => m.Title.Equals(title), trackChanges).Include(m => m.Director).FirstOrDefaultAsync();
+        }
+
         public async Task<Movie> CreateNewMovieAsync(MovieForCreationDto newMovie)
         {
             var movieExists = await FindByCondition(m => m.Title.Equals(newMovie.Title), false).FirstOrDefaultAsync();

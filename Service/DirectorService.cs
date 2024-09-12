@@ -26,12 +26,12 @@ namespace Service
             return _mapper.Map<IEnumerable<DirectorDto>>(await _uow.Directors.GetDirectorsAsync(trackChanges));
         }
 
-        public async Task<DirectorDto> GetDirectorDtoByIdAsync(int id, bool trackChanges)
+        public async Task<DirectorDto?> GetDirectorDtoByIdAsync(int id, bool trackChanges)
         {
             var dto = await _uow.Directors.GetDirectorByIdAsync(id, trackChanges);
             if (dto == null)
             {
-                throw new ArgumentNullException(nameof(dto));
+                return null;
             }
             return _mapper.Map<DirectorDto>(dto);
         }
