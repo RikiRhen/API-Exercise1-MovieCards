@@ -42,5 +42,15 @@ namespace Service
             return _mapper.Map<MovieDto>(dto);
         }
 
+        public async Task<MovieDto?> CreateNewMovieAsync(MovieForCreationDto newMovie)
+        {
+            var movieToBeCreated = await _uow.Movies.CreateNewMovieAsync(newMovie);
+            var id = movieToBeCreated.Id;
+            movieToBeCreated = await _uow.Movies.GetMovieByIdAsync(id, false);
+            if (movieToBeCreated == null) { return null; }
+
+            var dtoToReturn = _mapper.Map<MovieDto>(movieToBeCreated);
+            return dtoToReturn;
+        }
     }
 }

@@ -35,7 +35,7 @@ namespace MovieCard.Infrastructure.Data
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            ChangeTracker.DetectChanges();
+            //ChangeTracker.DetectChanges();
 
             return base.SaveChangesAsync(cancellationToken);
         }

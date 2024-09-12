@@ -16,8 +16,11 @@ namespace MovieCard.Infrastructure.Repository
 {
     public class MovieRepository : RepositoryBase<Movie>, IMovieRepository
     {
-
-        public MovieRepository(MovieCardContext context): base(context){}
+        private readonly IMapper _mapper;
+        public MovieRepository(MovieCardContext context, IMapper mapper) : base(context)
+        {
+            _mapper = mapper;
+        }
 
         //OBJECT MARKERAD - Titta in på att skapa en basklass/interface för MovieDto och MovieDetailDto
         public async Task<IEnumerable<object>> GetMoviesAsync(string? title, string? genre, string? director, string? actor, string? releaseDate, string? sortBy, string? sortOrder, bool trackChanges, bool detailed, IMapper mapper)
@@ -87,14 +90,25 @@ namespace MovieCard.Infrastructure.Repository
 
                 return queryResults;
             }
-
-            //return await GetAll(trackChanges).ToListAsync();
-
         }
 
         public async Task<Movie?> GetMovieByIdAsync(int id, bool trackChanges)
         {
             return await FindByCondition(m => m.Id.Equals(id), trackChanges).Include(m => m.Director).FirstOrDefaultAsync();
+        }
+
+        public async Task<Movie> CreateNewMovieAsync(MovieForCreationDto newMovie)
+        {
+            var movieExists = await FindByCondition(m => m.Title.Equals(newMovie.Title), false).FirstOrDefaultAsync();
+            if (movieExists != null)
+            {
+                return movieExists;
+            }
+
+            var finalMovieToAdd = _mapper.Map<Movie>(newMovie);
+            await CreateAsync(finalMovieToAdd);
+            await Context.SaveChangesAsync();
+            return finalMovieToAdd;
         }
     }
 }

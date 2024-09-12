@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MovieCard.Models\MovieCard.Models.csproj" />
+    <ProjectReference Include="..\MovieCard.Shared\MovieCard.Shared.csproj" />
   </ItemGroup>
 
 </Project>

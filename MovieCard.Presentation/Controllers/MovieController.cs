@@ -63,8 +63,6 @@ namespace MovieCard.Presentation.Controllers
         [HttpGet("Movies/{id}", Name = "GetMovie")]
         public async Task<ActionResult<MovieDto>> GetMovie(int id)
         {
-
-            //var dto = _mapper.Map<MovieDto>(await _serviceManager.Movie.Include(m => m.Director).FirstOrDefaultAsync(m => m.Id == id));
             var dto = await _serviceManager.MovieService.GetMovieDtoByIdAsync(id, false);
 
             if (dto == null)
@@ -73,7 +71,6 @@ namespace MovieCard.Presentation.Controllers
             }
 
             return Ok(dto);
-            //throw new NotImplementedException();
         }
 
         //GET ACTOR BY ID
@@ -115,29 +112,30 @@ namespace MovieCard.Presentation.Controllers
         [HttpPost("Movies")]
         public async Task<ActionResult<Movie>> CreateMovie(MovieForCreationDto newMovie)
         {
-            //if (newMovie == null)
-            //{
-            //    return BadRequest("A body that results in a null object was sent with request.");
-            //}
+            var movie = await _serviceManager.MovieService.CreateNewMovieAsync(newMovie);
+            if (movie == null)
+            {
+                return BadRequest("The return body of the function call is null");
+            }
 
-            //if (DateTime.TryParse(newMovie.ReleaseDate, out DateTime parsedDate))
-            //{
-            //    if (parsedDate > DateTime.Now)
-            //    {
-            //        return BadRequest("Release date of movie cannot be set in the future");
-            //    }
-            //}
+            if (DateTime.TryParse(newMovie.ReleaseDate, out DateTime parsedDate))
+            {
+                if (parsedDate > DateTime.Now)
+                {
+                    return BadRequest("The release date of a new movie cannot be in the future");
+                }
+            }
 
-            //var movieExists = await _serviceManager.Movie.FirstOrDefaultAsync(m => m.Title == newMovie.Title);
+            //var movieExists = await FindByCondition(m => m.Title.Equals(newMovie.Title), false).FirstOrDefaultAsync();
             //if (movieExists != null)
             //{
-            //    return BadRequest("A movie with that title already exists");
+            //    return movieExists;
             //}
 
-            //if (newMovie.Rating < 1 || newMovie.Rating > 10)
-            //{
-            //    return BadRequest("Rating of a movie should be between 1-10");
-            //}
+            if (newMovie.Rating < 1 || newMovie.Rating > 10)
+            {
+                return BadRequest("Rating of a movie should be between 1-10");
+            }
 
             //var director = await _serviceManager.Director.FindAsync(newMovie.DirectorId);
             //if (director == null)
@@ -145,16 +143,7 @@ namespace MovieCard.Presentation.Controllers
             //    return NotFound($"Director with ID {newMovie.DirectorId} was not found");
             //}
 
-            //var finalMovieToAdd = _mapper.Map<Movie>(newMovie);
-
-            //_serviceManager.Movie.Add(finalMovieToAdd);
-            //await _serviceManager.SaveChangesAsync();
-
-            //var movieDto = _mapper.Map<MovieDto>(finalMovieToAdd);
-
-
-            //return CreatedAtAction(nameof(GetMovie), new { id = finalMovieToAdd.Id }, movieDto);
-            throw new NotImplementedException();
+            return CreatedAtAction(nameof(GetMovie), new { id = movie.Id }, movie);  
         }
 
         //CREATE NEW ACTOR
