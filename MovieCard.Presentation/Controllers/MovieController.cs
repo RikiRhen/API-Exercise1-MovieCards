@@ -144,26 +144,28 @@ namespace MovieCard.Presentation.Controllers
         [HttpPost("Actors")]
         public async Task<ActionResult<Actor>> CreateActor(ActorForCreationDto newActor)
         {
-            //if (newActor == null)
-            //{
-            //    return BadRequest("A body that results in a null object was sent with request.");
-            //}
+            if (newActor == null)
+            {
+                return BadRequest("A body that results in a null object was sent with request.");
+            }
 
             //var actorExists = await _serviceManager.Actor.FirstOrDefaultAsync(a => a.Name == newActor.Name && a.DateOfBirth == newActor.DateOfBirth);
-            //if (actorExists != null)
-            //{
-            //    return BadRequest("An actor with that information already exists. Duplicates are not allowed");
-            //}
+            var actorExists = await _serviceManager.ActorService.GetActorDtoByNameAsync(newActor.Name);
+            if (actorExists != null)
+            {
+                return BadRequest("An actor with that information already exists. Duplicates are not allowed");
+            }
 
-            //var newActorToAdd = _mapper.Map<Actor>(newActor);
+            var success = await _serviceManager.ActorService.CreateNewActor(newActor);
+            if (!success)
+            {
+                return BadRequest("Failed to create a new actor from the information provided in request body");
+            }
 
-            //_serviceManager.Actor.Add(newActorToAdd);
-            //await _serviceManager.SaveChangesAsync();
+            var actorDto = await _serviceManager.ActorService.GetActorDtoByNameAsync(newActor.Name);
 
-            //var actorDto = _mapper.Map<ActorDto>(newActorToAdd);
-
-            //return CreatedAtAction(nameof(GetActor), new { id = newActorToAdd.Id }, actorDto);
-            throw new NotImplementedException();
+            //return CreatedAtAction(nameof(GetActor), new { id = actorDto.Id }, actorDto);
+            return Ok(actorDto);
         }
 
         //REPLACE EXISTING MOVIE
@@ -341,29 +343,5 @@ namespace MovieCard.Presentation.Controllers
             }
             return Ok($"The movie with the ID {id} has been removed from the database");
         }
-
-        //GET DETAILED INFORMATION ABOUT MOVIE
-        //GET: api/Movies/5/details
-        [HttpGet("Movies/{id}/details")]
-        public async Task<ActionResult<IEnumerable<MovieDetailDto>>> GetMovieDetails(int id)
-        {
-
-            //var dto = await _serviceManager.Movie
-            //    .Include(m => m.Director)
-            //    .Include(m => m.Director.ContactInfo)
-            //    .Include(m => m.Actors)
-            //    .Include(m => m.Genres)
-            //    .ProjectTo<MovieDetailDto>(_mapper.ConfigurationProvider)
-            //    .FirstOrDefaultAsync(m => m.Id == id);
-
-            //if (dto == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //return Ok(dto);
-            throw new NotImplementedException();
-        }
-
     }
 }
