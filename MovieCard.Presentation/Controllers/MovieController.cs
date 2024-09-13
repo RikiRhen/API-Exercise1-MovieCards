@@ -334,17 +334,12 @@ namespace MovieCard.Presentation.Controllers
         [HttpDelete("Movies/{id}")]
         public async Task<IActionResult> DeleteMovie(int id)
         {
-            //var movie = await _serviceManager.Movie.FindAsync(id);
-            //if (movie == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //_serviceManager.Movie.Remove(movie);
-            //await _serviceManager.SaveChangesAsync();
-
-            //return NoContent();
-            throw new NotImplementedException();
+            var success = await _serviceManager.MovieService.DeleteMovieAsync(id);
+            if (!success)
+            {
+                return BadRequest($"A movie with the ID {id} was not found in the database");
+            }
+            return Ok($"The movie with the ID {id} has been removed from the database");
         }
 
         //GET DETAILED INFORMATION ABOUT MOVIE

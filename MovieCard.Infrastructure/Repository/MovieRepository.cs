@@ -115,5 +115,17 @@ namespace MovieCard.Infrastructure.Repository
             await Context.SaveChangesAsync();
             return finalMovieToAdd;
         }
+
+        public async Task<bool> DeleteMovieAsync(int id)
+        {
+            var movieToBeDeleted = await FindByCondition(m => m.Id.Equals(id), false).FirstOrDefaultAsync();
+            if (movieToBeDeleted == null)
+            {
+                return false; 
+            }
+            Delete(movieToBeDeleted);
+            await Context.SaveChangesAsync();
+            return true;
+        }
     }
 }

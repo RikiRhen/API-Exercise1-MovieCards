@@ -15,5 +15,6 @@ namespace Service.Contracts
         Task<MovieDto> GetMovieDtoByIdAsync(int id, bool trackChanges);
         Task<MovieDto?> GetMovieDtoByTitleAsync(string title, bool trackChanges);
         Task<MovieDto?> CreateNewMovieAsync(MovieForCreationDto newMovie);
+        Task<bool> DeleteMovieAsync(int id);
     }
 }

@@ -54,7 +54,6 @@ namespace Service
                 return null;
             }
         }
-
         public async Task<MovieDto?> CreateNewMovieAsync(MovieForCreationDto newMovie)
         {
             var movieToBeCreated = await _uow.Movies.CreateNewMovieAsync(newMovie);
@@ -64,6 +63,12 @@ namespace Service
 
             var dtoToReturn = _mapper.Map<MovieDto>(movieToBeCreated);
             return dtoToReturn;
+        }
+
+        public async Task<bool> DeleteMovieAsync(int id)
+        {
+            var success = await _uow.Movies.DeleteMovieAsync(id);
+            return success;
         }
     }
 }

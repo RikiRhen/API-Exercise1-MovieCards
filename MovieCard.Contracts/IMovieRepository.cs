@@ -12,5 +12,6 @@ namespace MovieCard.Contracts
         Task<Movie?> GetMovieByIdAsync(int id, bool trackChanges);
         Task<Movie?> GetMovieByTitleAsync(string title, bool trackChanges);
         Task<Movie> CreateNewMovieAsync(MovieForCreationDto movie);
+        Task<bool> DeleteMovieAsync(int id);
     }
 }
